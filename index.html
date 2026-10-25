@@ -1,0 +1,1671 @@
+import React, { useState, useEffect, useMemo } from 'react';
+import { 
+  ShoppingBag, 
+  Store, 
+  Compass, 
+  PlusCircle, 
+  CheckCircle2, 
+  Circle, 
+  Search, 
+  Trash2, 
+  Camera, 
+  Check, 
+  X, 
+  ChevronRight, 
+  ShieldCheck, 
+  Sparkles, 
+  Heart,
+  Tag, 
+  Layers, 
+  User, 
+  MapPin, 
+  ArrowRight,
+  Filter,
+  ExternalLink,
+  Plus,
+  RefreshCw,
+  Sparkle
+} from 'lucide-react';
+
+// Initial preloaded database from Bobby Parrish's approved lists
+const INITIAL_FOOD_DATABASE = [
+  // --- BREADS ---
+  {
+    id: 'bread-1',
+    name: 'Simply Nature Sprouted Knock Your Sprouts Off',
+    brand: 'Aldi',
+    category: 'Bread',
+    stores: ['Aldi'],
+    highlights: ['Organic Sprouted Whole Wheat', 'No Industrial Seed Oils', 'No Dough Conditioners', 'High Fiber'],
+    price: '$3.59',
+    imageUrl: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=600&q=80',
+    whyClean: 'Sprouted grains break down anti-nutrients (phytic acid) making it easier to digest. Zero canola or soybean oil.'
+  },
+  {
+    id: 'bread-2',
+    name: 'Stone-Milled Organic Whole Grain Bread',
+    brand: 'One Mighty Mill',
+    category: 'Bread',
+    stores: ['Whole Foods', 'Target', 'Sprouts'],
+    highlights: ['Freshly Stone-Milled Flour', 'Extra Virgin Olive Oil', 'Preservative Free', 'Non-GMO'],
+    price: '$6.99',
+    imageUrl: 'https://images.unsplash.com/photo-1586444248902-2f64eddc13df?auto=format&fit=crop&w=600&q=80',
+    whyClean: 'Stone-milling preserves the germ and bran without synthetic fortification or high-heat roller processing.'
+  },
+  {
+    id: 'bread-3',
+    name: 'Powerseed 21 Grains Loaf',
+    brand: "Dave's Killer Bread",
+    category: 'Bread',
+    stores: ['Walmart', 'Target', 'Costco', 'Kroger', 'Whole Foods'],
+    highlights: ['Sweetened with Fruit Juice Only', '1g Sugar per Slice', 'Packed with Organic Seeds', 'Zero Cane Sugar'],
+    price: '$5.98',
+    imageUrl: 'https://images.unsplash.com/photo-1549931319-a545dcf3bc73?auto=format&fit=crop&w=600&q=80',
+    whyClean: "The only Dave's Killer Bread loaf approved by Bobby. Bypasses the 4g-5g refined cane sugar found in standard loaves."
+  },
+  {
+    id: 'bread-4',
+    name: 'San Francisco Traditional Sourdough Round',
+    brand: 'Boudin',
+    category: 'Bread',
+    stores: ['Costco', 'Target', 'Kroger'],
+    highlights: ['Authentic Wild Sourdough Starter', '3 Ingredients Only', 'Naturally Fermented', 'No Baker Yeast'],
+    price: '$4.89',
+    imageUrl: 'https://images.unsplash.com/photo-1589367920969-ab8e050bbb04?auto=format&fit=crop&w=600&q=80',
+    whyClean: 'Real sourdough requires natural lactobacillus fermentation which digests gluten. Free of commercial yeast cheats.'
+  },
+  {
+    id: 'bread-5',
+    name: 'Artisan Slow-Fermented Sourdough',
+    brand: 'Izzio Artisan Bakery',
+    category: 'Bread',
+    stores: ['Whole Foods', 'Sprouts', 'Kroger'],
+    highlights: ['72-Hour Fermentation', 'Flour, Water, Salt', 'Non-GMO Wheat', 'Zero Sugar'],
+    price: '$5.49',
+    imageUrl: 'https://images.unsplash.com/photo-1511018556340-d16986a1c194?auto=format&fit=crop&w=600&q=80',
+    whyClean: 'Slow 72-hour natural wild fermentation ensures prebiotic gut benefits and exceptional digestibility.'
+  },
+  {
+    id: 'bread-6',
+    name: 'Sprouted Whole Grain Ezekiel 4:9',
+    brand: 'Food For Life',
+    category: 'Bread',
+    stores: ['Whole Foods', 'Sprouts', 'Target', 'Walmart', 'Kroger'],
+    highlights: ['Sprouted Grains & Legumes', 'Zero Flour', 'Complete Vegan Protein', 'No Added Sugar'],
+    price: '$6.49',
+    imageUrl: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=600&q=80',
+    whyClean: 'Zero flour used. Made entirely of sprouted wheat, barley, beans, lentils, millet, and spelt for sustained energy.'
+  },
+  {
+    id: 'bread-7',
+    name: 'Cristal Burger Buns (Olive Oil & Fermented)',
+    brand: 'Cristal',
+    category: 'Bread',
+    stores: ['Whole Foods', 'Sprouts'],
+    highlights: ['100% Extra Virgin Olive Oil', 'Crisp Crust / Light Crumb', 'No Soybean/Canola Oil', 'Natural Ferment'],
+    price: '$5.99',
+    imageUrl: 'https://images.unsplash.com/photo-1550547660-d9450f859349?auto=format&fit=crop&w=600&q=80',
+    whyClean: 'Bobby-approved replacement for seed-oil laden commercial burger and brioche buns.'
+  },
+  {
+    id: 'bread-8',
+    name: 'Original 7-Nut & Seed Gluten-Free Loaf',
+    brand: 'Base Culture',
+    category: 'Bread',
+    stores: ['Whole Foods', 'Sprouts', 'Target'],
+    highlights: ['100% Paleo & Grain-Free', 'Almond Butter Base', 'No Gums or Tapioca Fillers', 'Clean Seed Mix'],
+    price: '$8.99',
+    imageUrl: 'https://images.unsplash.com/photo-1549931319-a545dcf3bc73?auto=format&fit=crop&w=600&q=80',
+    whyClean: 'Freezer aisle gem: zero rice flour fillers, zero xantham gum, zero seed oils. Just nuts, seeds, and egg.'
+  },
+
+  // --- YOGURT ---
+  {
+    id: 'yogurt-1',
+    name: 'Total 5% Whole Milk Plain Greek Yogurt',
+    brand: 'Fage',
+    category: 'Yogurt',
+    stores: ['Walmart', 'Target', 'Costco', 'Kroger', 'Whole Foods'],
+    highlights: ['5% Pure Milkfat', '16g Clean Protein', 'Zero Added Sugar', 'Non-GMO Verified'],
+    price: '$4.48',
+    imageUrl: 'https://images.unsplash.com/photo-1488477181946-6428a0291777?auto=format&fit=crop&w=600&q=80',
+    whyClean: 'Full-fat dairy preserves CLA and Omega-3s. No thickeners, starches, or artificial preservatives.'
+  },
+  {
+    id: 'yogurt-2',
+    name: 'Organic Whole Milk Greek Plain Yogurt',
+    brand: 'Stonyfield Organic',
+    category: 'Yogurt',
+    stores: ['Target', 'Whole Foods', 'Walmart', 'Kroger'],
+    highlights: ['USDA Organic Milk', 'No Antibiotics or Synthetic Hormones', '15g Protein', 'Pasture Grazed'],
+    price: '$4.99',
+    imageUrl: 'https://images.unsplash.com/photo-1571212515416-fef01fc43637?auto=format&fit=crop&w=600&q=80',
+    whyClean: '100% certified organic dairy prevents toxic synthetic pesticide and herbicide residues.'
+  },
+  {
+    id: 'yogurt-3',
+    name: 'Whole Milk Plain Skyr (4% or 9% Triple Cream)',
+    brand: "Siggi's",
+    category: 'Yogurt',
+    stores: ['Whole Foods', 'Target', 'Sprouts', 'Kroger'],
+    highlights: ['Icelandic Thick Skyr', 'Simple Whole Milk', 'Low Natural Sugar', 'Zero Thickeners'],
+    price: '$5.69',
+    imageUrl: 'https://images.unsplash.com/photo-1505252585461-04db1eb84625?auto=format&fit=crop&w=600&q=80',
+    whyClean: 'Traditional Icelandic recipe strains away whey naturally. Bobby warns: avoid the vanilla 0% version.'
+  },
+  {
+    id: 'yogurt-4',
+    name: '100% Grass-Fed Organic Whole Greek Yogurt',
+    brand: 'Maple Hill Creamery',
+    category: 'Yogurt',
+    stores: ['Whole Foods', 'Sprouts', 'Target', 'Walmart'],
+    highlights: ["Bobby's #1 Pick", '100% Grass-Fed Certified', 'Ultra Rich Omega-3 / CLA', 'Zero Grain Feed'],
+    price: '$6.29',
+    imageUrl: 'https://images.unsplash.com/photo-1488477181946-6428a0291777?auto=format&fit=crop&w=600&q=80',
+    whyClean: 'Cows spend 365 days on pasture eating 100% grass. Unmatched healthy fatty acid profile.'
+  },
+  {
+    id: 'yogurt-5',
+    name: 'A2/A2 Organic Whole Milk Cream-On-Top Yogurt',
+    brand: 'Alexandre Family Farm',
+    category: 'Yogurt',
+    stores: ['Whole Foods', 'Sprouts'],
+    highlights: ['A2 Beta-Casein Dairy', 'Regenerative Organic Certified', 'Decadent Cream Top', 'Easy on Gut'],
+    price: '$6.99',
+    imageUrl: 'https://images.unsplash.com/photo-1571212515416-fef01fc43637?auto=format&fit=crop&w=600&q=80',
+    whyClean: 'A2 genetics prevent gut inflammation associated with conventional A1 casein milk.'
+  },
+  {
+    id: 'yogurt-6',
+    name: 'Cultured Probiotic Coconut Yogurt (Island Blend/Plain)',
+    brand: 'The Coconut Cult',
+    category: 'Yogurt',
+    stores: ['Whole Foods', 'Sprouts', 'Target'],
+    highlights: ['50 Billion CFU Probiotics', '100% Organic Coconut Meat & Cream', 'Zero Gums / Starches', 'Dairy-Free Gold Standard'],
+    price: '$9.99',
+    imageUrl: 'https://images.unsplash.com/photo-1517456793572-1d8efd6dc135?auto=format&fit=crop&w=600&q=80',
+    whyClean: 'Potent therapeutic fermented coconut without emulsifiers, tapioca starch, or cane sugar.'
+  },
+  {
+    id: 'yogurt-7',
+    name: 'Pure Coconut Cultured Yogurt',
+    brand: 'Cocojune',
+    category: 'Yogurt',
+    stores: ['Whole Foods', 'Target', 'Sprouts'],
+    highlights: ['Certified Organic & Non-GMO', 'Clean Coconut Cream', 'Live Active Flora', 'Zero Cane Sugar'],
+    price: '$5.49',
+    imageUrl: 'https://images.unsplash.com/photo-1505252585461-04db1eb84625?auto=format&fit=crop&w=600&q=80',
+    whyClean: 'Silky texture obtained naturally from coconut fat and cassava root rather than chemical gums.'
+  },
+
+  // --- BUTTER ---
+  {
+    id: 'butter-1',
+    name: 'Pure Irish Salted Butter (Gold Foil)',
+    brand: 'Kerrygold',
+    category: 'Butter',
+    stores: ['Costco', 'Aldi', 'Walmart', 'Target', 'Whole Foods', 'Kroger'],
+    highlights: ['95% Grass-Fed Irish Cream', '82% High Butterfat', 'Natural Beta-Carotene Gold', 'Pure Salt & Cream'],
+    price: '$4.98',
+    imageUrl: 'https://images.unsplash.com/photo-1589985270826-4b7bb135bc9d?auto=format&fit=crop&w=600&q=80',
+    whyClean: 'Buy the SALTED version. (Avoid Kerrygold unsalted which was reformulated with skim milk and starter).'
+  },
+  {
+    id: 'butter-2',
+    name: 'Grass-Fed Salted Butter 4-Pack (New Zealand)',
+    brand: 'Kirkland Signature',
+    category: 'Butter',
+    stores: ['Costco'],
+    highlights: ['Best Bulk Value', '95% Pasture Grass Grazed', 'European-Style 82% Fat', 'Non-GMO Certified'],
+    price: '$11.99',
+    imageUrl: 'https://images.unsplash.com/photo-1589985270826-4b7bb135bc9d?auto=format&fit=crop&w=600&q=80',
+    whyClean: 'Imported from pristine New Zealand pastures at a price per pound that beats conventional grocery stores.'
+  },
+  {
+    id: 'butter-3',
+    name: 'Pasture-Raised Sea Salted Butter (85% Butterfat)',
+    brand: 'Vital Farms',
+    category: 'Butter',
+    stores: ['Whole Foods', 'Target', 'Sprouts', 'Kroger'],
+    highlights: ['85% Ultra-Rich Butterfat', 'Girls on Grass Outdoors', 'Slow Churned', 'Low Moisture'],
+    price: '$5.49',
+    imageUrl: 'https://images.unsplash.com/photo-1589985270826-4b7bb135bc9d?auto=format&fit=crop&w=600&q=80',
+    whyClean: 'One of the highest butterfat percentages on the shelf. Brown butter and pastry perfection.'
+  },
+  {
+    id: 'butter-4',
+    name: 'Countryside Creamery Pure Irish Salted Butter',
+    brand: 'Aldi',
+    category: 'Butter',
+    stores: ['Aldi'],
+    highlights: ['Best Budget Pick (~$3.69)', 'Direct Dupe of Kerrygold', 'Grass-Fed Irish Cream', 'No Added Flavors'],
+    price: '$3.69',
+    imageUrl: 'https://images.unsplash.com/photo-1589985270826-4b7bb135bc9d?auto=format&fit=crop&w=600&q=80',
+    whyClean: 'Regulated under strict Irish dairy guidelines; 100% pasture-fed dairy at an unbeatable price.'
+  },
+  {
+    id: 'butter-5',
+    name: 'French Cultured Butter with Sea Salt Crystals',
+    brand: 'Isigny Sainte-Mère',
+    category: 'Butter',
+    stores: ['Whole Foods', 'Costco', 'Sprouts'],
+    highlights: ['Normandy Pasture Milk', 'Natural Crushed Salt Flakes', 'Slow Cultured Ferment', 'AOP Protected'],
+    price: '$7.49',
+    imageUrl: 'https://images.unsplash.com/photo-1589985270826-4b7bb135bc9d?auto=format&fit=crop&w=600&q=80',
+    whyClean: 'Real culturing produces lactic goodness with zero chemical flavoring chemicals.'
+  },
+  {
+    id: 'butter-6',
+    name: 'Naturally Softer Pure Irish Butter Tub',
+    brand: 'Kerrygold',
+    category: 'Butter',
+    stores: ['Target', 'Walmart', 'Kroger', 'Whole Foods'],
+    highlights: ['Mechanically Churned Soft', 'Zero Canola / Soybean Oil', 'Spreadable from Fridge', 'Pure Irish Cream'],
+    price: '$5.29',
+    imageUrl: 'https://images.unsplash.com/photo-1589985270826-4b7bb135bc9d?auto=format&fit=crop&w=600&q=80',
+    whyClean: 'The ONLY spreadable tub Bobby approves: it is softened by churning, not cut with cheap inflammatory seed oils.'
+  },
+
+  // --- MILK ---
+  {
+    id: 'milk-1',
+    name: '100% Grassfed Organic Whole Milk',
+    brand: 'Maple Hill Creamery',
+    category: 'Milk',
+    stores: ['Whole Foods', 'Sprouts', 'Target', 'Walmart'],
+    highlights: ['100% Pasture Grazed', 'Highest Natural Omega-3s', 'Certified Organic', 'Zero Feedlot Grain'],
+    price: '$6.49',
+    imageUrl: 'https://images.unsplash.com/photo-1550583724-b2692b85b150?auto=format&fit=crop&w=600&q=80',
+    whyClean: 'Cows eat exclusively fresh pasture grass. Cleanest fat profile with natural fat-soluble vitamins A, D, and K2.'
+  },
+  {
+    id: 'milk-2',
+    name: 'Organic Grassmilk Whole Milk',
+    brand: 'Organic Valley',
+    category: 'Milk',
+    stores: ['Whole Foods', 'Target', 'Sprouts', 'Kroger'],
+    highlights: ['100% Grass-Fed Co-op', 'Zero Grain or Corn Feed', 'Non-Homogenized Options', 'No Antibiotics'],
+    price: '$5.99',
+    imageUrl: 'https://images.unsplash.com/photo-1563636619-e9143da7973b?auto=format&fit=crop&w=600&q=80',
+    whyClean: 'Grass-fed dairy contains up to 500% more conjugated linoleic acid (CLA) than conventional feedlot milk.'
+  },
+  {
+    id: 'milk-3',
+    name: 'Cream-On-Top Organic Vat-Pasteurized Whole Milk',
+    brand: 'Kalona SuperNatural',
+    category: 'Milk',
+    stores: ['Whole Foods', 'Sprouts', 'Target'],
+    highlights: ['Low-Temp Vat Pasteurized', 'Cream Top Floating Layer', 'Enzymes Preserved', 'Non-Homogenized'],
+    price: '$5.79',
+    imageUrl: 'https://images.unsplash.com/photo-1528750997573-59b89d56f4f7?auto=format&fit=crop&w=600&q=80',
+    whyClean: 'Gently heated at 145°F instead of 280°F ultra-high heat, leaving proteins intact and easily digestible.'
+  },
+  {
+    id: 'milk-4',
+    name: 'Ultra-Filtered Organic Whole Milk',
+    brand: 'Organic Valley',
+    category: 'Milk',
+    stores: ['Target', 'Whole Foods', 'Kroger'],
+    highlights: ['13g High Protein (+50%)', '6g Low Sugar (-50%)', 'Clean Swap for Fairlife', 'Organic Pasture Dairy'],
+    price: '$5.49',
+    imageUrl: 'https://images.unsplash.com/photo-1550583724-b2692b85b150?auto=format&fit=crop&w=600&q=80',
+    whyClean: 'Gives the athletic macros of ultra-filtered milk without supporting factory farm feedlot conditions.'
+  },
+  {
+    id: 'milk-5',
+    name: '100% Grassfed Organic A2 Whole Milk',
+    brand: 'The a2 Milk Company',
+    category: 'Milk',
+    stores: ['Whole Foods', 'Sprouts', 'Target', 'Walmart'],
+    highlights: ['100% A2 Beta-Casein', 'No Digestive Distress', 'Certified Grassfed', 'Creamy Full Fat'],
+    price: '$5.99',
+    imageUrl: 'https://images.unsplash.com/photo-1563636619-e9143da7973b?auto=format&fit=crop&w=600&q=80',
+    whyClean: 'Ideal for those sensitive to conventional dairy; looks and tastes like rich real cow milk.'
+  },
+  {
+    id: 'milk-6',
+    name: 'Organic Simple Almond Milk (3 Ingredients)',
+    brand: 'Califia Farms',
+    category: 'Milk',
+    stores: ['Whole Foods', 'Target', 'Kroger', 'Sprouts', 'Walmart'],
+    highlights: ["Bobby's Daily Smoothie Pick", 'Water, Almonds, Sea Salt', 'Zero Gums & Zero Canola Oil', 'USDA Organic'],
+    price: '$4.99',
+    imageUrl: 'https://images.unsplash.com/photo-1568651318042-7a70a80e14db?auto=format&fit=crop&w=600&q=80',
+    whyClean: 'Unlike Silk or standard Califia, the "Organic Simple" carton eliminates gellan gum and natural flavors.'
+  },
+  {
+    id: 'milk-7',
+    name: 'Pure Organic Almond or Oat Milk',
+    brand: 'MALK Organics',
+    category: 'Milk',
+    stores: ['Whole Foods', 'Sprouts', 'Target', 'Kroger'],
+    highlights: ['Zero Gums, Emulsifiers, or Oils', 'Cold-Pressed Whole Nuts', 'Glyphosate Residue Free', 'Clean Minimalist'],
+    price: '$5.99',
+    imageUrl: 'https://images.unsplash.com/photo-1568651318042-7a70a80e14db?auto=format&fit=crop&w=600&q=80',
+    whyClean: 'No rapeseed oil or maltodextrin (common in Oatly). Just filtered water, organic nuts, and salt.'
+  },
+
+  // --- PERSONAL CARE ---
+  {
+    id: 'care-1',
+    name: 'Pure-Castile Bar or Liquid Soap (Peppermint/Baby Unscented)',
+    brand: "Dr. Bronner's",
+    category: 'Personal Care',
+    stores: ['Target', 'Walmart', 'Whole Foods', 'Sprouts', 'Kroger', 'Costco'],
+    highlights: ["Bobby's Daily Shower Pick", '100% Saponified Organic Oils', 'Zero SLS / Chemical Detergents', 'EWG Verified'],
+    price: '$4.99',
+    imageUrl: 'https://images.unsplash.com/photo-1607006314144-846399990b79?auto=format&fit=crop&w=600&q=80',
+    whyClean: 'Saponified organic coconut, olive, and jojoba oils. Pure essential oils instead of toxic synthetic parfum.'
+  },
+  {
+    id: 'care-2',
+    name: 'Natural Bar Soap & Shampoo (Wood Barrel Bourbon)',
+    brand: 'Dr. Squatch',
+    category: 'Personal Care',
+    stores: ['Target', 'Walmart', 'Kroger'],
+    highlights: ['Cold-Processed Plant Oils', 'Sulfate & Paraben Free', 'Zero Synthetic Petroleum Dyes', 'Natural Exfoliants'],
+    price: '$6.98',
+    imageUrl: 'https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?auto=format&fit=crop&w=600&q=80',
+    whyClean: 'Ditches the hormone-disrupting phthalates and petroleum dyes in Old Spice and Dove.'
+  },
+  {
+    id: 'care-3',
+    name: '100% Natural Beeswax Lip Balm (Original Unflavored)',
+    brand: "Burt's Bees",
+    category: 'Personal Care',
+    stores: ['Aldi', 'Costco', 'Target', 'Walmart', 'Kroger', 'Whole Foods'],
+    highlights: ['Pure Natural Beeswax', 'Vitamin E & Peppermint', 'No Petroleum Jelly / Petrolatum', 'Non-Habit Forming'],
+    price: '$3.49',
+    imageUrl: 'https://images.unsplash.com/photo-1629732047847-50219e9c5aef?auto=format&fit=crop&w=600&q=80',
+    whyClean: 'Hydrates without fossil fuel mineral oil or petroleum hydrocarbons that make lips dependent.'
+  },
+  {
+    id: 'care-4',
+    name: 'Skin Food Original Ultra-Rich Cream',
+    brand: 'Weleda',
+    category: 'Personal Care',
+    stores: ['Whole Foods', 'Target', 'Sprouts'],
+    highlights: ['Certified Natural by NATRUE', 'Pansy, Calendula & Chamomile', 'Sweet Almond & Beeswax', 'Paraben Free'],
+    price: '$18.99',
+    imageUrl: 'https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=600&q=80',
+    whyClean: 'Deep hydration without mineral oil, endocrine-disrupting parabens, or synthetic fragrance.'
+  },
+  {
+    id: 'care-5',
+    name: 'Everyday Shea Body Lotion & African Black Soap',
+    brand: 'Alaffia',
+    category: 'Personal Care',
+    stores: ['Whole Foods', 'Target', 'Sprouts'],
+    highlights: ['Unrefined Fair-Trade Shea', 'Ethical Co-op Handcrafted', 'Baby Safe & Ultra Gentle', 'Zero Artificial Dyes'],
+    price: '$11.99',
+    imageUrl: 'https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=600&q=80',
+    whyClean: 'No synthetic silicones or petroleum thickeners. Simple unrefined shea nut butter and lemongrass oils.'
+  }
+];
+
+const STORES = ['All Stores', 'Aldi', 'Costco', 'Target', 'Whole Foods', 'Sprouts', 'Walmart', 'Kroger'];
+const CATEGORIES = ['All', 'Bread', 'Yogurt', 'Butter', 'Milk', 'Personal Care'];
+const FAMILY_MEMBERS = ['Whole Family', 'Mom', 'Dad', 'Kid 1', 'Kid 2', 'Grandma'];
+
+export default function App() {
+  // Navigation tabs: 'catalog', 'decider', 'list', 'add'
+  const [activeTab, setActiveTab] = useState('catalog');
+
+  // Foods state backed by localStorage
+  const [foods, setFoods] = useState(() => {
+    try {
+      const saved = localStorage.getItem('cleancart_foods');
+      return saved ? JSON.parse(saved) : INITIAL_FOOD_DATABASE;
+    } catch (e) {
+      return INITIAL_FOOD_DATABASE;
+    }
+  });
+
+  // Shopping list items backed by localStorage
+  const [shoppingList, setShoppingList] = useState(() => {
+    try {
+      const saved = localStorage.getItem('cleancart_list');
+      if (saved) return JSON.parse(saved);
+      // Preload a sample family list
+      return [
+        {
+          id: 'item-demo-1',
+          name: 'Simply Nature Sprouted Bread',
+          category: 'Bread',
+          store: 'Aldi',
+          quantity: 2,
+          addedBy: 'Mom',
+          checked: false,
+          photoUrl: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=300&q=80',
+          notes: 'Make sure it is the Knock Your Sprouts Off variety'
+        },
+        {
+          id: 'item-demo-2',
+          name: 'Maple Hill 100% Grass-Fed Whole Milk',
+          category: 'Milk',
+          store: 'Target',
+          quantity: 1,
+          addedBy: 'Dad',
+          checked: false,
+          photoUrl: 'https://images.unsplash.com/photo-1550583724-b2692b85b150?auto=format&fit=crop&w=300&q=80',
+          notes: 'Red grassfed carton'
+        },
+        {
+          id: 'item-demo-3',
+          name: 'Kirkland Grass-Fed Butter 4-Pack',
+          category: 'Butter',
+          store: 'Costco',
+          quantity: 1,
+          addedBy: 'Dad',
+          checked: true,
+          photoUrl: 'https://images.unsplash.com/photo-1589985270826-4b7bb135bc9d?auto=format&fit=crop&w=300&q=80',
+          notes: 'Best bulk deal'
+        }
+      ];
+    } catch (e) {
+      return [];
+    }
+  });
+
+  // Filters for Catalog
+  const [selectedStore, setSelectedStore] = useState('All Stores');
+  const [selectedCategory, setSelectedCategory] = useState('All');
+  const [searchQuery, setSearchQuery] = useState('');
+
+  // Store Decider State
+  const [deciderQuery, setDeciderQuery] = useState('Bread');
+
+  // Shopping List filter by current store
+  const [listStoreFilter, setListStoreFilter] = useState('All');
+
+  // Quick Notification Toast
+  const [toastMessage, setToastMessage] = useState(null);
+
+  // Sync to local storage
+  useEffect(() => {
+    try {
+      localStorage.setItem('cleancart_foods', JSON.stringify(foods));
+    } catch (err) {
+      console.error('Storage write error', err);
+    }
+  }, [foods]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('cleancart_list', JSON.stringify(shoppingList));
+    } catch (err) {
+      console.error('Storage write error', err);
+    }
+  }, [shoppingList]);
+
+  const showToast = (msg) => {
+    setToastMessage(msg);
+    setTimeout(() => setToastMessage(null), 3000);
+  };
+
+  // Quick add to shopping list from catalog
+  const addFoodToList = (food, targetStore = null) => {
+    const chosenStore = targetStore || (selectedStore !== 'All Stores' ? selectedStore : food.stores[0]);
+    const newItem = {
+      id: 'custom-' + Date.now() + '-' + Math.random().toString(36).substr(2, 4),
+      name: food.name,
+      category: food.category,
+      store: chosenStore,
+      quantity: 1,
+      addedBy: 'Family',
+      checked: false,
+      photoUrl: food.imageUrl,
+      notes: food.highlights.slice(0, 2).join(' • ')
+    };
+
+    setShoppingList(prev => [newItem, ...prev]);
+    showToast(`Added "${food.name.substring(0, 22)}..." to shopping list!`);
+  };
+
+  // Toggle item check
+  const toggleCheckItem = (id) => {
+    setShoppingList(prev => prev.map(item => 
+      item.id === id ? { ...item, checked: !item.checked } : item
+    ));
+  };
+
+  // Remove single list item
+  const removeListItem = (id) => {
+    setShoppingList(prev => prev.filter(item => item.id !== id));
+  };
+
+  // Clear completed
+  const clearCompleted = () => {
+    const remaining = shoppingList.filter(item => !item.checked);
+    setShoppingList(remaining);
+    showToast('Cleaned up bought items!');
+  };
+
+  // Filtered Catalog
+  const filteredFoods = useMemo(() => {
+    return foods.filter(item => {
+      const matchStore = selectedStore === 'All Stores' || item.stores.includes(selectedStore);
+      const matchCategory = selectedCategory === 'All' || item.category === selectedCategory;
+      const q = searchQuery.toLowerCase().trim();
+      const matchSearch = !q || 
+        item.name.toLowerCase().includes(q) ||
+        item.brand.toLowerCase().includes(q) ||
+        item.highlights.some(h => h.toLowerCase().includes(q)) ||
+        item.category.toLowerCase().includes(q);
+      return matchStore && matchCategory && matchSearch;
+    });
+  }, [foods, selectedStore, selectedCategory, searchQuery]);
+
+  // Compute store food counts for badges
+  const storeCounts = useMemo(() => {
+    const counts = {};
+    STORES.forEach(s => {
+      if (s === 'All Stores') {
+        counts[s] = foods.length;
+      } else {
+        counts[s] = foods.filter(f => f.stores.includes(s)).length;
+      }
+    });
+    return counts;
+  }, [foods]);
+
+  // Store Decider analytics for a keyword search
+  const deciderResults = useMemo(() => {
+    const q = deciderQuery.toLowerCase().trim();
+    if (!q) return [];
+
+    const matchingFoods = foods.filter(item => 
+      item.name.toLowerCase().includes(q) ||
+      item.category.toLowerCase().includes(q) ||
+      item.highlights.some(h => h.toLowerCase().includes(q)) ||
+      item.brand.toLowerCase().includes(q)
+    );
+
+    const storeAnalysis = STORES.filter(s => s !== 'All Stores').map(storeName => {
+      const availableItems = matchingFoods.filter(f => f.stores.includes(storeName));
+      return {
+        store: storeName,
+        count: availableItems.length,
+        items: availableItems
+      };
+    });
+
+    // Sort by most clean items available descending
+    return storeAnalysis.sort((a, b) => b.count - a.count);
+  }, [foods, deciderQuery]);
+
+  // Add New Item Form State
+  const [newFood, setNewFood] = useState({
+    name: '',
+    brand: '',
+    category: 'Bread',
+    stores: ['Target'],
+    highlights: '',
+    price: '',
+    whyClean: '',
+    imageUrl: ''
+  });
+
+  const handleImageUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setNewFood(prev => ({ ...prev, imageUrl: reader.result }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleSaveNewFood = (e) => {
+    e.preventDefault();
+    if (!newFood.name.trim()) return;
+
+    const highlightsArray = newFood.highlights
+      ? newFood.highlights.split(',').map(s => s.trim()).filter(Boolean)
+      : ['100% Clean', 'Bobby Approved'];
+
+    const itemToAdd = {
+      id: 'custom-food-' + Date.now(),
+      name: newFood.name,
+      brand: newFood.brand || 'Clean Choice',
+      category: newFood.category,
+      stores: newFood.stores.length > 0 ? newFood.stores : ['Whole Foods'],
+      highlights: highlightsArray,
+      price: newFood.price || 'Market Price',
+      whyClean: newFood.whyClean || 'Meets clean ingredient standards: zero seed oils, low sugar, and real food ingredients.',
+      imageUrl: newFood.imageUrl || 'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=600&q=80'
+    };
+
+    setFoods(prev => [itemToAdd, ...prev]);
+    showToast(`Added ${itemToAdd.name} to the family database!`);
+    
+    // Reset form & go back to catalog
+    setNewFood({
+      name: '',
+      brand: '',
+      category: 'Bread',
+      stores: ['Target'],
+      highlights: '',
+      price: '',
+      whyClean: '',
+      imageUrl: ''
+    });
+    setActiveTab('catalog');
+  };
+
+  // Add Custom Item into shopping list directly
+  const [customListItem, setCustomListItem] = useState({
+    name: '',
+    store: 'Target',
+    category: 'Other',
+    addedBy: 'Mom',
+    quantity: 1,
+    notes: ''
+  });
+
+  const handleAddCustomToList = (e) => {
+    e.preventDefault();
+    if (!customListItem.name.trim()) return;
+    const newItem = {
+      id: 'list-' + Date.now(),
+      name: customListItem.name,
+      category: customListItem.category,
+      store: customListItem.store,
+      quantity: Number(customListItem.quantity) || 1,
+      addedBy: customListItem.addedBy,
+      checked: false,
+      photoUrl: '',
+      notes: customListItem.notes
+    };
+    setShoppingList(prev => [newItem, ...prev]);
+    setCustomListItem(prev => ({ ...prev, name: '', notes: '' }));
+    showToast(`Added to ${customListItem.store} list!`);
+  };
+
+  // Reset to original dataset helper
+  const handleResetCatalog = () => {
+    if (window.confirm("Reset clean foods to Bobby Parrish's default preloaded grocery list?")) {
+      setFoods(INITIAL_FOOD_DATABASE);
+      localStorage.setItem('cleancart_foods', JSON.stringify(INITIAL_FOOD_DATABASE));
+      showToast('Catalog restored to default clean list!');
+    }
+  };
+
+  const pendingListItems = shoppingList.filter(item => !item.checked);
+  const doneListItems = shoppingList.filter(item => item.checked);
+
+  return (
+    <div className="min-h-screen bg-stone-50 text-stone-800 flex flex-col font-sans antialiased pb-24 md:pb-8">
+      {/* Top App Header */}
+      <header className="sticky top-0 z-40 bg-white/95 backdrop-blur border-b border-stone-200 px-4 py-3 shadow-sm">
+        <div className="max-w-6xl mx-auto flex items-center justify-between">
+          <div className="flex items-center space-x-2.5">
+            <div className="w-10 h-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center shadow-md shadow-emerald-200">
+              <ShieldCheck className="w-6 h-6 stroke-[2.2]" />
+            </div>
+            <div>
+              <div className="flex items-center space-x-1.5">
+                <h1 className="text-xl font-bold tracking-tight text-stone-900">CleanCart Family</h1>
+                <span className="bg-emerald-100 text-emerald-800 text-[10px] font-semibold px-2 py-0.5 rounded-full uppercase tracking-wider">
+                  Bobby Approved
+                </span>
+              </div>
+              <p className="text-xs text-stone-500 hidden sm:block">Family grocery guide for seed-oil-free, whole food eating</p>
+            </div>
+          </div>
+
+          {/* Quick List Badge & Nav */}
+          <div className="flex items-center space-x-2">
+            <button 
+              onClick={() => setActiveTab('list')}
+              className="relative flex items-center space-x-2 bg-emerald-50 text-emerald-800 border border-emerald-200 px-3 py-1.5 rounded-full hover:bg-emerald-100 transition text-sm font-medium"
+            >
+              <ShoppingBag className="w-4 h-4 text-emerald-600" />
+              <span className="hidden sm:inline">Shopping List</span>
+              {pendingListItems.length > 0 && (
+                <span className="bg-emerald-600 text-white text-xs px-2 py-0.2 rounded-full font-bold ml-1">
+                  {pendingListItems.length}
+                </span>
+              )}
+            </button>
+          </div>
+        </div>
+      </header>
+
+      {/* Floating Notification Toast */}
+      {toastMessage && (
+        <div className="fixed top-16 left-1/2 transform -translate-x-1/2 z-50 bg-stone-900 text-white px-4 py-2 rounded-full shadow-lg text-sm flex items-center space-x-2 animate-bounce">
+          <Check className="w-4 h-4 text-emerald-400" />
+          <span>{toastMessage}</span>
+        </div>
+      )}
+
+      {/* Main Tab Navigation Desktop Bar */}
+      <div className="bg-stone-100 border-b border-stone-200 hidden md:block">
+        <div className="max-w-6xl mx-auto px-4 flex space-x-8">
+          <button 
+            onClick={() => setActiveTab('catalog')}
+            className={`py-3.5 px-2 border-b-2 font-medium text-sm flex items-center space-x-2 transition ${
+              activeTab === 'catalog' 
+                ? 'border-emerald-600 text-emerald-700 font-semibold' 
+                : 'border-transparent text-stone-600 hover:text-stone-900'
+            }`}
+          >
+            <Store className="w-4 h-4" />
+            <span>Search by Store & Catalog</span>
+            <span className="bg-stone-200 text-stone-700 text-xs px-2 py-0.5 rounded-full font-bold">
+              {foods.length}
+            </span>
+          </button>
+
+          <button 
+            onClick={() => setActiveTab('decider')}
+            className={`py-3.5 px-2 border-b-2 font-medium text-sm flex items-center space-x-2 transition ${
+              activeTab === 'decider' 
+                ? 'border-emerald-600 text-emerald-700 font-semibold' 
+                : 'border-transparent text-stone-600 hover:text-stone-900'
+            }`}
+          >
+            <Compass className="w-4 h-4" />
+            <span>Where Should I Go? (Store Decider)</span>
+          </button>
+
+          <button 
+            onClick={() => setActiveTab('list')}
+            className={`py-3.5 px-2 border-b-2 font-medium text-sm flex items-center space-x-2 transition ${
+              activeTab === 'list' 
+                ? 'border-emerald-600 text-emerald-700 font-semibold' 
+                : 'border-transparent text-stone-600 hover:text-stone-900'
+            }`}
+          >
+            <ShoppingBag className="w-4 h-4" />
+            <span>Family Shopping List</span>
+            {pendingListItems.length > 0 && (
+              <span className="bg-emerald-600 text-white text-xs px-2 py-0.5 rounded-full font-bold">
+                {pendingListItems.length}
+              </span>
+            )}
+          </button>
+
+          <button 
+            onClick={() => setActiveTab('add')}
+            className={`py-3.5 px-2 border-b-2 font-medium text-sm flex items-center space-x-2 transition ${
+              activeTab === 'add' 
+                ? 'border-emerald-600 text-emerald-700 font-semibold' 
+                : 'border-transparent text-stone-600 hover:text-stone-900'
+            }`}
+          >
+            <PlusCircle className="w-4 h-4" />
+            <span>Add Clean Food Photo</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Main Content Area */}
+      <main className="max-w-6xl mx-auto px-4 py-5 flex-1 w-full">
+
+        {/* ----------------- TAB 1: CATALOG & SEARCH BY STORE ----------------- */}
+        {activeTab === 'catalog' && (
+          <div className="space-y-6">
+            
+            {/* Store Arrival Banner & Selector */}
+            <div className="bg-white rounded-2xl p-4 md:p-5 border border-stone-200/80 shadow-sm space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                <div>
+                  <div className="flex items-center space-x-2">
+                    <MapPin className="w-5 h-5 text-emerald-600" />
+                    <h2 className="text-lg font-bold text-stone-900">Select Where You Are Shopping Today</h2>
+                  </div>
+                  <p className="text-xs text-stone-500 mt-0.5">
+                    Tap a store to instantly filter clean bread, yogurt, butter, milk, and personal care available there!
+                  </p>
+                </div>
+                {selectedStore !== 'All Stores' && (
+                  <button 
+                    onClick={() => setSelectedStore('All Stores')}
+                    className="text-xs text-emerald-700 hover:underline flex items-center self-start sm:self-center font-medium"
+                  >
+                    Clear store filter (Show all)
+                  </button>
+                )}
+              </div>
+
+              {/* Store Badges Row */}
+              <div className="flex items-center space-x-2 overflow-x-auto pb-2 scrollbar-thin">
+                {STORES.map((store) => {
+                  const isSelected = selectedStore === store;
+                  const count = storeCounts[store] || 0;
+                  return (
+                    <button
+                      key={store}
+                      onClick={() => setSelectedStore(store)}
+                      className={`whitespace-nowrap px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition flex items-center space-x-2 border shrink-0 ${
+                        isSelected 
+                          ? 'bg-emerald-700 text-white border-emerald-800 shadow-sm'
+                          : 'bg-stone-50 text-stone-700 border-stone-200 hover:bg-stone-100'
+                      }`}
+                    >
+                      <span>{store}</span>
+                      <span className={`text-[11px] px-1.5 py-0.5 rounded-full font-bold ${
+                        isSelected ? 'bg-emerald-900 text-white' : 'bg-stone-200 text-stone-700'
+                      }`}>
+                        {count}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* In-Store Greeting Summary */}
+            {selectedStore !== 'All Stores' && (
+              <div className="bg-emerald-50 border border-emerald-200/80 rounded-2xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-xs">
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center font-bold text-lg">
+                    {storeCounts[selectedStore]}
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-emerald-900">
+                      Inside {selectedStore}! {storeCounts[selectedStore]} Verified Clean Finds
+                    </h3>
+                    <p className="text-xs text-emerald-700">
+                      Guaranteed no synthetic seed oils, high fructose corn syrup, or chemical thickeners.
+                    </p>
+                  </div>
+                </div>
+
+                <button 
+                  onClick={() => {
+                    setListStoreFilter(selectedStore);
+                    setActiveTab('list');
+                  }}
+                  className="bg-white border border-emerald-300 text-emerald-800 px-3.5 py-1.5 rounded-lg text-xs font-semibold hover:bg-emerald-100 transition flex items-center space-x-1.5 shrink-0"
+                >
+                  <ShoppingBag className="w-3.5 h-3.5" />
+                  <span>View {selectedStore} Shopping List</span>
+                </button>
+              </div>
+            )}
+
+            {/* Search & Category Pills */}
+            <div className="space-y-3">
+              <div className="relative">
+                <Search className="w-4 h-4 text-stone-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                <input 
+                  type="text"
+                  placeholder="Search clean items (e.g. 'sourdough', 'grass-fed', 'olive oil', 'Dr. Squatch')..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full bg-white border border-stone-200 rounded-xl pl-10 pr-9 py-2.5 text-sm text-stone-900 placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 shadow-xs"
+                />
+                {searchQuery && (
+                  <button 
+                    onClick={() => setSearchQuery('')}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-600"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                )}
+              </div>
+
+              {/* Categories */}
+              <div className="flex items-center space-x-2 overflow-x-auto pb-1 scrollbar-none">
+                <span className="text-xs font-semibold text-stone-400 uppercase tracking-wider mr-1 shrink-0">
+                  Category:
+                </span>
+                {CATEGORIES.map(cat => (
+                  <button
+                    key={cat}
+                    onClick={() => setSelectedCategory(cat)}
+                    className={`whitespace-nowrap px-3 py-1.5 rounded-full text-xs font-medium transition shrink-0 ${
+                      selectedCategory === cat
+                        ? 'bg-stone-900 text-white shadow-xs'
+                        : 'bg-white border border-stone-200 text-stone-600 hover:bg-stone-100'
+                    }`}
+                  >
+                    {cat}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Results Grid */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between text-xs text-stone-500 font-medium px-1">
+                <span>Showing {filteredFoods.length} clean food items</span>
+                <button 
+                  onClick={handleResetCatalog}
+                  className="hover:text-emerald-700 flex items-center space-x-1"
+                >
+                  <RefreshCw className="w-3 h-3" />
+                  <span>Reset Default Catalog</span>
+                </button>
+              </div>
+
+              {filteredFoods.length === 0 ? (
+                <div className="bg-white rounded-2xl p-10 text-center border border-dashed border-stone-300 space-y-3">
+                  <div className="w-12 h-12 bg-stone-100 rounded-full flex items-center justify-center mx-auto text-stone-400">
+                    <Search className="w-6 h-6" />
+                  </div>
+                  <h4 className="font-bold text-stone-800">No clean products match this filter</h4>
+                  <p className="text-xs text-stone-500 max-w-sm mx-auto">
+                    Try clearing the store filter or search keyword to see clean finds in other stores.
+                  </p>
+                  <button 
+                    onClick={() => { setSelectedStore('All Stores'); setSelectedCategory('All'); setSearchQuery(''); }}
+                    className="bg-emerald-600 text-white px-4 py-2 rounded-xl text-xs font-semibold hover:bg-emerald-700"
+                  >
+                    Reset All Filters
+                  </button>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {filteredFoods.map(item => (
+                    <div 
+                      key={item.id} 
+                      className="bg-white rounded-2xl border border-stone-200/90 shadow-xs hover:shadow-md transition overflow-hidden flex flex-col group"
+                    >
+                      {/* Product Image */}
+                      <div className="relative h-44 bg-stone-100 overflow-hidden">
+                        <img 
+                          src={item.imageUrl} 
+                          alt={item.name}
+                          className="w-full h-full object-cover group-hover:scale-105 transition duration-300"
+                          loading="lazy"
+                        />
+                        <div className="absolute top-2.5 left-2.5">
+                          <span className="bg-white/95 backdrop-blur text-stone-800 text-[11px] font-bold px-2.5 py-1 rounded-md shadow-xs">
+                            {item.category}
+                          </span>
+                        </div>
+                        <div className="absolute top-2.5 right-2.5">
+                          <span className="bg-emerald-800/90 backdrop-blur text-white text-[11px] font-semibold px-2 py-0.5 rounded-md shadow-xs">
+                            {item.price}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Content Card Body */}
+                      <div className="p-4 flex-1 flex flex-col justify-between space-y-3">
+                        <div>
+                          <div className="text-[11px] font-bold uppercase tracking-wider text-emerald-700">
+                            {item.brand}
+                          </div>
+                          <h3 className="font-bold text-stone-900 text-base leading-snug mt-0.5">
+                            {item.name}
+                          </h3>
+                          <p className="text-xs text-stone-600 mt-1 line-clamp-2 italic">
+                            "{item.whyClean}"
+                          </p>
+                        </div>
+
+                        {/* Health Badges */}
+                        <div className="flex flex-wrap gap-1.5 pt-1">
+                          {item.highlights.map((badge, idx) => (
+                            <span 
+                              key={idx} 
+                              className="bg-emerald-50 text-emerald-800 border border-emerald-200/60 text-[10px] font-medium px-2 py-0.5 rounded-full"
+                            >
+                              ✓ {badge}
+                            </span>
+                          ))}
+                        </div>
+
+                        {/* Stores Availability Tags */}
+                        <div className="pt-2 border-t border-stone-100">
+                          <div className="text-[10px] font-semibold text-stone-400 uppercase tracking-wider mb-1.5">
+                            Found at:
+                          </div>
+                          <div className="flex flex-wrap gap-1">
+                            {item.stores.map((s, idx) => (
+                              <button
+                                key={idx}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setSelectedStore(s);
+                                }}
+                                className={`text-[10px] font-medium px-2 py-0.5 rounded transition ${
+                                  selectedStore === s 
+                                    ? 'bg-emerald-600 text-white font-bold'
+                                    : 'bg-stone-100 text-stone-700 hover:bg-stone-200'
+                                }`}
+                              >
+                                {s}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Add to List Button */}
+                        <button
+                          onClick={() => addFoodToList(item)}
+                          className="w-full mt-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2 px-3 rounded-xl text-xs flex items-center justify-center space-x-1.5 transition shadow-xs"
+                        >
+                          <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
+                          <span>Add to Shopping List</span>
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+          </div>
+        )}
+
+        {/* ----------------- TAB 2: STORE DECIDER ("Where Should I Go?") ----------------- */}
+        {activeTab === 'decider' && (
+          <div className="space-y-6">
+            <div className="bg-gradient-to-br from-emerald-800 to-stone-900 rounded-3xl p-6 md:p-8 text-white shadow-lg space-y-4">
+              <div className="flex items-center space-x-2 text-emerald-300">
+                <Compass className="w-5 h-5" />
+                <span className="text-xs font-bold uppercase tracking-widest">Store Matcher & Decision Assistant</span>
+              </div>
+              <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
+                Can't decide which grocery store to drive to?
+              </h2>
+              <p className="text-emerald-100/90 text-sm max-w-2xl leading-relaxed">
+                Type in what your family is craving today (e.g. <span className="underline font-semibold cursor-pointer" onClick={() => setDeciderQuery('Bread')}>sourdough bread</span>, <span className="underline font-semibold cursor-pointer" onClick={() => setDeciderQuery('Milk')}>whole grassfed milk</span>, or <span className="underline font-semibold cursor-pointer" onClick={() => setDeciderQuery('Butter')}>grass-fed butter</span>). CleanCart will rank every supermarket by which store gives you the greatest selection of verified clean foods!
+              </p>
+
+              {/* Decider Search Box */}
+              <div className="relative pt-2">
+                <Search className="w-5 h-5 text-stone-400 absolute left-4 top-1/2 -translate-y-1/2" />
+                <input 
+                  type="text"
+                  value={deciderQuery}
+                  onChange={(e) => setDeciderQuery(e.target.value)}
+                  placeholder="Search item or craving: e.g. 'Bread', 'Yogurt', 'Butter', 'Sourdough'..."
+                  className="w-full bg-white text-stone-900 rounded-2xl pl-12 pr-4 py-3.5 text-sm md:text-base font-medium shadow-md focus:outline-none focus:ring-4 focus:ring-emerald-400/50"
+                />
+              </div>
+
+              {/* Quick Suggestion Pills */}
+              <div className="flex flex-wrap items-center gap-2 pt-1">
+                <span className="text-xs text-emerald-200 font-medium">Popular family searches:</span>
+                {['Bread', 'Sourdough', 'Yogurt', 'Butter', 'Milk', 'Personal Care', 'Grass-Fed'].map(tag => (
+                  <button
+                    key={tag}
+                    onClick={() => setDeciderQuery(tag)}
+                    className="bg-white/10 hover:bg-white/20 text-white text-xs px-3 py-1 rounded-full font-medium transition"
+                  >
+                    {tag}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Comparative Breakdown Results */}
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="font-bold text-stone-800 text-lg flex items-center space-x-2">
+                  <span>Store Rankings for "{deciderQuery}"</span>
+                  <span className="text-xs font-normal text-stone-500">
+                    (Ranked by clean options available)
+                  </span>
+                </h3>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {deciderResults.map((result, index) => {
+                  const isTopPick = index === 0 && result.count > 0;
+                  return (
+                    <div 
+                      key={result.store}
+                      className={`bg-white rounded-2xl p-5 border transition flex flex-col justify-between ${
+                        isTopPick 
+                          ? 'border-emerald-500 ring-2 ring-emerald-500/20 shadow-md' 
+                          : 'border-stone-200 shadow-xs'
+                      }`}
+                    >
+                      <div>
+                        {/* Header */}
+                        <div className="flex items-start justify-between">
+                          <div className="flex items-center space-x-2.5">
+                            <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-bold text-sm ${
+                              isTopPick ? 'bg-emerald-600 text-white' : 'bg-stone-100 text-stone-700'
+                            }`}>
+                              #{index + 1}
+                            </div>
+                            <div>
+                              <h4 className="font-bold text-stone-900 text-base">{result.store}</h4>
+                              <p className="text-xs text-stone-500">
+                                {result.count} verified healthy choice{result.count === 1 ? '' : 's'}
+                              </p>
+                            </div>
+                          </div>
+
+                          {isTopPick && (
+                            <span className="bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2 py-1 rounded-full uppercase tracking-wider flex items-center space-x-1">
+                              <Sparkles className="w-3 h-3 text-emerald-600" />
+                              <span>Best Match</span>
+                            </span>
+                          )}
+                        </div>
+
+                        {/* List of matched items inside this store */}
+                        <div className="mt-4 space-y-2">
+                          {result.count === 0 ? (
+                            <p className="text-xs text-stone-400 italic py-2">
+                              No clean items tagged for "{deciderQuery}" found at {result.store}.
+                            </p>
+                          ) : (
+                            result.items.map(food => (
+                              <div 
+                                key={food.id}
+                                className="flex items-center justify-between text-xs p-2 rounded-lg bg-stone-50 border border-stone-100"
+                              >
+                                <div className="pr-2">
+                                  <div className="font-semibold text-stone-800">{food.name}</div>
+                                  <div className="text-[10px] text-stone-500">{food.brand} • {food.price}</div>
+                                </div>
+                                <button
+                                  onClick={() => addFoodToList(food, result.store)}
+                                  className="text-[11px] font-semibold text-emerald-700 hover:text-emerald-900 bg-emerald-50 hover:bg-emerald-100 px-2 py-1 rounded shrink-0 transition"
+                                >
+                                  + Add to List
+                                </button>
+                              </div>
+                            ))
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Store footer action */}
+                      {result.count > 0 && (
+                        <div className="pt-4 mt-3 border-t border-stone-100 flex items-center justify-between">
+                          <button
+                            onClick={() => {
+                              setSelectedStore(result.store);
+                              setActiveTab('catalog');
+                            }}
+                            className="text-xs font-semibold text-emerald-700 hover:underline flex items-center space-x-1"
+                          >
+                            <span>Browse all items at {result.store}</span>
+                            <ArrowRight className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ----------------- TAB 3: FAMILY SHOPPING LIST ----------------- */}
+        {activeTab === 'list' && (
+          <div className="space-y-6">
+            
+            {/* Header & In-Store Filter */}
+            <div className="bg-white rounded-2xl p-5 border border-stone-200 shadow-xs space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div>
+                  <h2 className="text-lg font-bold text-stone-900 flex items-center space-x-2">
+                    <ShoppingBag className="w-5 h-5 text-emerald-600" />
+                    <span>Collaborative Family Grocery List</span>
+                  </h2>
+                  <p className="text-xs text-stone-500 mt-0.5">
+                    Filter by the store you're currently in to only see the items you need to pick up right now.
+                  </p>
+                </div>
+
+                {doneListItems.length > 0 && (
+                  <button 
+                    onClick={clearCompleted}
+                    className="text-xs bg-stone-100 hover:bg-stone-200 text-stone-700 px-3 py-1.5 rounded-xl font-medium transition self-start sm:self-auto flex items-center space-x-1"
+                  >
+                    <Trash2 className="w-3.5 h-3.5 text-stone-500" />
+                    <span>Clear {doneListItems.length} Checked</span>
+                  </button>
+                )}
+              </div>
+
+              {/* In-Store Filter Bar */}
+              <div className="flex items-center space-x-2 overflow-x-auto pb-1">
+                <span className="text-xs font-semibold text-stone-400 uppercase tracking-wider mr-1 shrink-0">
+                  Store View:
+                </span>
+                {['All', ...STORES.filter(s => s !== 'All Stores')].map(s => {
+                  const isSel = listStoreFilter === s;
+                  const countForStore = s === 'All' 
+                    ? pendingListItems.length 
+                    : pendingListItems.filter(i => i.store === s).length;
+                  return (
+                    <button
+                      key={s}
+                      onClick={() => setListStoreFilter(s)}
+                      className={`whitespace-nowrap px-3 py-1.5 rounded-full text-xs font-semibold transition shrink-0 flex items-center space-x-1.5 ${
+                        isSel 
+                          ? 'bg-emerald-700 text-white shadow-xs' 
+                          : 'bg-stone-100 text-stone-700 hover:bg-stone-200'
+                      }`}
+                    >
+                      <span>{s}</span>
+                      {countForStore > 0 && (
+                        <span className={`text-[10px] px-1.5 py-0.2 rounded-full ${
+                          isSel ? 'bg-emerald-900 text-white' : 'bg-stone-300 text-stone-800'
+                        }`}>
+                          {countForStore}
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Quick Add Custom Item Form */}
+            <form onSubmit={handleAddCustomToList} className="bg-white rounded-2xl p-4 border border-stone-200 shadow-xs space-y-3">
+              <div className="text-xs font-bold text-stone-700 uppercase tracking-wider flex items-center space-x-1.5">
+                <PlusCircle className="w-4 h-4 text-emerald-600" />
+                <span>Family Member Quick-Add</span>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-12 gap-2.5">
+                <input 
+                  type="text"
+                  placeholder="Item name (e.g., Organic Honey, Avocados, Clean Eggs)..."
+                  value={customListItem.name}
+                  onChange={(e) => setCustomListItem(prev => ({ ...prev, name: e.target.value }))}
+                  className="sm:col-span-5 bg-stone-50 border border-stone-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                />
+
+                <select
+                  value={customListItem.store}
+                  onChange={(e) => setCustomListItem(prev => ({ ...prev, store: e.target.value }))}
+                  className="sm:col-span-3 bg-stone-50 border border-stone-200 rounded-xl px-3 py-2 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                >
+                  {STORES.filter(s => s !== 'All Stores').map(st => (
+                    <option key={st} value={st}>{st}</option>
+                  ))}
+                </select>
+
+                <select
+                  value={customListItem.addedBy}
+                  onChange={(e) => setCustomListItem(prev => ({ ...prev, addedBy: e.target.value }))}
+                  className="sm:col-span-2 bg-stone-50 border border-stone-200 rounded-xl px-3 py-2 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                >
+                  {FAMILY_MEMBERS.map(mem => (
+                    <option key={mem} value={mem}>{mem}</option>
+                  ))}
+                </select>
+
+                <button
+                  type="submit"
+                  className="sm:col-span-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl px-4 py-2 text-xs font-bold transition flex items-center justify-center space-x-1"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>Add</span>
+                </button>
+              </div>
+            </form>
+
+            {/* Shopping List Items Container */}
+            <div className="space-y-4">
+              {/* To-Buy Items */}
+              <div className="space-y-2">
+                <h3 className="text-xs font-bold text-stone-500 uppercase tracking-wider px-1">
+                  Need to Buy ({
+                    shoppingList.filter(item => !item.checked && (listStoreFilter === 'All' || item.store === listStoreFilter)).length
+                  })
+                </h3>
+
+                {shoppingList.filter(item => !item.checked && (listStoreFilter === 'All' || item.store === listStoreFilter)).length === 0 ? (
+                  <div className="bg-white rounded-2xl p-8 text-center border border-dashed border-stone-200">
+                    <p className="text-stone-500 text-sm">
+                      {listStoreFilter === 'All' 
+                        ? 'No items left to buy! Add items from the catalog or add a custom item above.' 
+                        : `No pending items for ${listStoreFilter}. All done here!`}
+                    </p>
+                  </div>
+                ) : (
+                  shoppingList
+                    .filter(item => !item.checked && (listStoreFilter === 'All' || item.store === listStoreFilter))
+                    .map(item => (
+                      <div 
+                        key={item.id}
+                        className="bg-white rounded-xl p-3.5 border border-stone-200/90 shadow-xs flex items-center justify-between gap-3 hover:border-emerald-300 transition"
+                      >
+                        {/* Checkbox & Details */}
+                        <div className="flex items-center space-x-3 flex-1 min-w-0">
+                          <button 
+                            onClick={() => toggleCheckItem(item.id)}
+                            className="text-stone-300 hover:text-emerald-600 transition shrink-0"
+                          >
+                            <Circle className="w-6 h-6 stroke-[1.8]" />
+                          </button>
+
+                          {item.photoUrl && (
+                            <img 
+                              src={item.photoUrl} 
+                              alt={item.name} 
+                              className="w-12 h-12 rounded-lg object-cover border border-stone-100 shrink-0 hidden sm:block" 
+                            />
+                          )}
+
+                          <div className="min-w-0">
+                            <div className="flex items-center space-x-2">
+                              <span className="font-bold text-stone-900 text-sm truncate">{item.name}</span>
+                              {item.quantity > 1 && (
+                                <span className="text-[10px] bg-stone-100 text-stone-700 px-1.5 py-0.5 rounded font-bold">
+                                  ×{item.quantity}
+                                </span>
+                              )}
+                            </div>
+                            <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] text-stone-500 mt-0.5">
+                              <span className="font-semibold text-emerald-700 bg-emerald-50 px-1.5 py-0.2 rounded">
+                                {item.store}
+                              </span>
+                              <span>•</span>
+                              <span className="text-stone-600">Added by: {item.addedBy}</span>
+                              {item.notes && (
+                                <>
+                                  <span>•</span>
+                                  <span className="truncate italic text-stone-400">{item.notes}</span>
+                                </>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Action buttons */}
+                        <div className="flex items-center space-x-2 shrink-0">
+                          <button
+                            onClick={() => removeListItem(item.id)}
+                            className="text-stone-400 hover:text-rose-600 p-1 rounded transition"
+                            title="Remove"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
+                    ))
+                )}
+              </div>
+
+              {/* Already Bought Section */}
+              {shoppingList.filter(item => item.checked && (listStoreFilter === 'All' || item.store === listStoreFilter)).length > 0 && (
+                <div className="space-y-2 pt-4">
+                  <h3 className="text-xs font-bold text-stone-400 uppercase tracking-wider px-1">
+                    Carted & Completed
+                  </h3>
+                  {shoppingList
+                    .filter(item => item.checked && (listStoreFilter === 'All' || item.store === listStoreFilter))
+                    .map(item => (
+                      <div 
+                        key={item.id}
+                        className="bg-stone-50/70 rounded-xl p-3 border border-stone-200/50 flex items-center justify-between gap-3 opacity-60"
+                      >
+                        <div className="flex items-center space-x-3">
+                          <button 
+                            onClick={() => toggleCheckItem(item.id)}
+                            className="text-emerald-600 hover:text-stone-400 transition"
+                          >
+                            <CheckCircle2 className="w-5 h-5 fill-emerald-100" />
+                          </button>
+                          <div>
+                            <span className="text-sm line-through text-stone-600">{item.name}</span>
+                            <span className="text-[10px] text-stone-400 ml-2">({item.store})</span>
+                          </div>
+                        </div>
+                        <button
+                          onClick={() => removeListItem(item.id)}
+                          className="text-stone-400 hover:text-rose-600 p-1"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    ))}
+                </div>
+              )}
+            </div>
+
+          </div>
+        )}
+
+        {/* ----------------- TAB 4: ADD NEW CLEAN FOOD & PICTURE ----------------- */}
+        {activeTab === 'add' && (
+          <div className="max-w-2xl mx-auto space-y-6">
+            <div className="bg-white rounded-3xl p-6 md:p-8 border border-stone-200 shadow-sm space-y-6">
+              <div>
+                <div className="flex items-center space-x-2 text-emerald-700">
+                  <Sparkle className="w-5 h-5" />
+                  <span className="text-xs font-bold uppercase tracking-wider">Family Pantry Contribution</span>
+                </div>
+                <h2 className="text-2xl font-bold text-stone-900 mt-1">Add a New Clean Grocery Find</h2>
+                <p className="text-xs text-stone-500 mt-1">
+                  Snap a photo of the package and nutrition label. It will be saved into your family's custom store guide!
+                </p>
+              </div>
+
+              <form onSubmit={handleSaveNewFood} className="space-y-4">
+                {/* Photo Upload Area */}
+                <div>
+                  <label className="block text-xs font-bold text-stone-700 uppercase tracking-wider mb-1.5">
+                    Product Photo (Take photo or select image)
+                  </label>
+                  <div className="flex flex-col sm:flex-row items-center gap-4">
+                    <div className="w-32 h-32 rounded-2xl bg-stone-100 border-2 border-dashed border-stone-300 flex items-center justify-center overflow-hidden shrink-0">
+                      {newFood.imageUrl ? (
+                        <img src={newFood.imageUrl} alt="Preview" className="w-full h-full object-cover" />
+                      ) : (
+                        <Camera className="w-8 h-8 text-stone-400" />
+                      )}
+                    </div>
+                    <div className="flex-1 w-full space-y-2">
+                      <input 
+                        type="file" 
+                        accept="image/*"
+                        capture="environment"
+                        onChange={handleImageUpload}
+                        className="text-xs text-stone-500 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-emerald-50 file:text-emerald-800 hover:file:bg-emerald-100 cursor-pointer"
+                      />
+                      <input 
+                        type="text"
+                        placeholder="Or paste an image web link (optional)..."
+                        value={newFood.imageUrl}
+                        onChange={(e) => setNewFood(prev => ({ ...prev, imageUrl: e.target.value }))}
+                        className="w-full bg-stone-50 border border-stone-200 rounded-xl px-3 py-2 text-xs focus:ring-2 focus:ring-emerald-500 focus:outline-none"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Name & Brand */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-bold text-stone-700 uppercase tracking-wider mb-1">
+                      Product Name *
+                    </label>
+                    <input 
+                      type="text" 
+                      required
+                      placeholder="e.g., Organic A2 Whole Milk"
+                      value={newFood.name}
+                      onChange={(e) => setNewFood(prev => ({ ...prev, name: e.target.value }))}
+                      className="w-full bg-stone-50 border border-stone-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-stone-700 uppercase tracking-wider mb-1">
+                      Brand
+                    </label>
+                    <input 
+                      type="text" 
+                      placeholder="e.g., Alexandre Family Farm"
+                      value={newFood.brand}
+                      onChange={(e) => setNewFood(prev => ({ ...prev, brand: e.target.value }))}
+                      className="w-full bg-stone-50 border border-stone-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    />
+                  </div>
+                </div>
+
+                {/* Category & Price */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-bold text-stone-700 uppercase tracking-wider mb-1">
+                      Category
+                    </label>
+                    <select
+                      value={newFood.category}
+                      onChange={(e) => setNewFood(prev => ({ ...prev, category: e.target.value }))}
+                      className="w-full bg-stone-50 border border-stone-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    >
+                      {CATEGORIES.filter(c => c !== 'All').map(c => (
+                        <option key={c} value={c}>{c}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-stone-700 uppercase tracking-wider mb-1">
+                      Estimated Price / Note
+                    </label>
+                    <input 
+                      type="text" 
+                      placeholder="e.g., $5.99 or On Sale $4.50"
+                      value={newFood.price}
+                      onChange={(e) => setNewFood(prev => ({ ...prev, price: e.target.value }))}
+                      className="w-full bg-stone-50 border border-stone-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    />
+                  </div>
+                </div>
+
+                {/* Stores Available Multi-Check */}
+                <div>
+                  <label className="block text-xs font-bold text-stone-700 uppercase tracking-wider mb-1.5">
+                    Which stores have you spotted this at?
+                  </label>
+                  <div className="flex flex-wrap gap-2">
+                    {STORES.filter(s => s !== 'All Stores').map(st => {
+                      const isChecked = newFood.stores.includes(st);
+                      return (
+                        <button
+                          type="button"
+                          key={st}
+                          onClick={() => {
+                            setNewFood(prev => {
+                              const exists = prev.stores.includes(st);
+                              return {
+                                ...prev,
+                                stores: exists 
+                                  ? prev.stores.filter(s => s !== st)
+                                  : [...prev.stores, st]
+                              };
+                            });
+                          }}
+                          className={`text-xs px-3 py-1.5 rounded-xl font-medium transition border ${
+                            isChecked 
+                              ? 'bg-emerald-700 text-white border-emerald-800' 
+                              : 'bg-stone-50 text-stone-700 border-stone-200 hover:bg-stone-100'
+                          }`}
+                        >
+                          {isChecked ? '✓ ' : '+ '}{st}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Key Healthy Highlights */}
+                <div>
+                  <label className="block text-xs font-bold text-stone-700 uppercase tracking-wider mb-1">
+                    Clean Highlights (comma-separated)
+                  </label>
+                  <input 
+                    type="text" 
+                    placeholder="e.g., 100% Grass-Fed, No Seed Oils, Organic, Zero Sugar"
+                    value={newFood.highlights}
+                    onChange={(e) => setNewFood(prev => ({ ...prev, highlights: e.target.value }))}
+                    className="w-full bg-stone-50 border border-stone-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  />
+                </div>
+
+                {/* Why Clean / Ingredient Note */}
+                <div>
+                  <label className="block text-xs font-bold text-stone-700 uppercase tracking-wider mb-1">
+                    Why Bobby / We Love It (Ingredient notes)
+                  </label>
+                  <textarea 
+                    rows={2}
+                    placeholder="e.g., Only 3 ingredients (whole milk, cultures, salt). No gums or potassium sorbate."
+                    value={newFood.whyClean}
+                    onChange={(e) => setNewFood(prev => ({ ...prev, whyClean: e.target.value }))}
+                    className="w-full bg-stone-50 border border-stone-200 rounded-xl px-3.5 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  />
+                </div>
+
+                {/* Submit button */}
+                <div className="pt-2">
+                  <button 
+                    type="submit"
+                    className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-2xl text-sm transition shadow-md flex items-center justify-center space-x-2"
+                  >
+                    <PlusCircle className="w-5 h-5" />
+                    <span>Save to Family Healthy Catalog</span>
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+      </main>
+
+      {/* Mobile Bottom Navigation Bar */}
+      <nav className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur border-t border-stone-200 z-50 md:hidden py-1 px-2 shadow-lg">
+        <div className="grid grid-cols-4 gap-1">
+          <button
+            onClick={() => setActiveTab('catalog')}
+            className={`flex flex-col items-center justify-center py-1.5 px-1 rounded-xl text-[10px] font-semibold transition ${
+              activeTab === 'catalog' ? 'text-emerald-700 bg-emerald-50' : 'text-stone-500'
+            }`}
+          >
+            <Store className="w-5 h-5 mb-0.5" />
+            <span>Stores</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('decider')}
+            className={`flex flex-col items-center justify-center py-1.5 px-1 rounded-xl text-[10px] font-semibold transition ${
+              activeTab === 'decider' ? 'text-emerald-700 bg-emerald-50' : 'text-stone-500'
+            }`}
+          >
+            <Compass className="w-5 h-5 mb-0.5" />
+            <span>Decider</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('list')}
+            className={`relative flex flex-col items-center justify-center py-1.5 px-1 rounded-xl text-[10px] font-semibold transition ${
+              activeTab === 'list' ? 'text-emerald-700 bg-emerald-50' : 'text-stone-500'
+            }`}
+          >
+            <ShoppingBag className="w-5 h-5 mb-0.5" />
+            <span>List</span>
+            {pendingListItems.length > 0 && (
+              <span className="absolute top-1 right-3 bg-emerald-600 text-white text-[9px] w-4 h-4 rounded-full flex items-center justify-center font-bold">
+                {pendingListItems.length}
+              </span>
+            )}
+          </button>
+
+          <button
+            onClick={() => setActiveTab('add')}
+            className={`flex flex-col items-center justify-center py-1.5 px-1 rounded-xl text-[10px] font-semibold transition ${
+              activeTab === 'add' ? 'text-emerald-700 bg-emerald-50' : 'text-stone-500'
+            }`}
+          >
+            <PlusCircle className="w-5 h-5 mb-0.5" />
+            <span>Add Food</span>
+          </button>
+        </div>
+      </nav>
+    </div>
+  );
+}
